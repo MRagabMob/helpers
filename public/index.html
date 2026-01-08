@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apple Pay Integration Helper</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #0066CC;
+      --primary-hover: #0052A3;
+      --success: #00C853;
+      --warning: #FF6B35;
+      --danger: #E11D48;
+      --bg-main: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --border: #E2E8F0;
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --code-bg: #F1F5F9;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .container { max-width: 800px; margin: 0 auto; }
+
+    .input-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .input-group { margin-bottom: 16px; }
+
+    .input-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .input-wrapper { position: relative; }
+
+    .input-wrapper input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      background: var(--bg-main);
+    }
+
+    .input-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+
+    .input-wrapper input::placeholder { color: var(--text-secondary); }
+
+    .helper-note {
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab:hover { color: var(--primary); }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+
+    .tab-content.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .output-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .output-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .output-title svg { width: 18px; height: 18px; }
+
+    .url-display {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      word-break: break-all;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+
+    .url-display.empty { color: var(--text-secondary); font-style: italic; }
+
+    .url-display.invalid {
+      color: var(--danger);
+      border-color: rgba(225, 29, 72, 0.25);
+      background: rgba(225, 29, 72, 0.04);
+      font-style: normal;
+    }
+
+    .copy-btn {
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .copy-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .copy-btn:active { transform: translateY(0); }
+
+    .copy-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .copy-btn.copied { background: var(--success); }
+
+    .warning-box {
+      background: linear-gradient(135deg, #FFF4E6 0%, #FFE8CC 100%);
+      border-left: 4px solid var(--warning);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .warning-box svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: var(--warning);
+    }
+
+    .warning-box p { font-size: 14px; color: #8B4513; margin: 0; }
+
+    .code-block {
+      background: #1E293B;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .code-block pre {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: #E2E8F0;
+      margin: 0;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .code-section { margin-bottom: 24px; }
+
+    .code-section:last-child { margin-bottom: 0; }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+
+    .subtext {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 24, 39, 0.95);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 9999;
+      max-width: 92vw;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="input-section">
+      <div class="input-group">
+        <label for="domain">Merchant Domain</label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="domain"
+            placeholder="myshop.com  (or paste: https://myshop.com/checkout)"
+            autocomplete="off"
+            inputmode="url"
+            spellcheck="false"
+          />
+        </div>
+        <div class="helper-note">
+          Tip: paste a full URL — we’ll automatically extract the domain (hostname).
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="verification">Domain Verification</button>
+      <button class="tab" data-tab="certificate">Certificate Generation</button>
+    </div>
+
+    <div class="tab-content active" id="verification">
+      <div class="output-card">
+        <div class="output-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Verification File Path
+        </div>
+
+        <div class="url-display empty" id="verificationUrl">
+          Enter your domain to generate verification path
+        </div>
+
+        <button class="copy-btn" id="copyVerification" disabled>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span>Copy URL</span>
+        </button>
+
+        <div class="warning-box">
+          <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+            <path fill-rule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"></path>
+          </svg>
+          <p>
+            <strong>Important:</strong> Do not add <code>.txt</code> or <code>.json</code> extensions to this file.
+            Apple Pay requires the exact filename without any extension.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="certificate">
+      <div class="output-card">
+        <div id="certificateContent">
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p>Enter your domain to generate OpenSSL commands</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const domainInput = document.getElementById('domain');
+    const verificationUrl = document.getElementById('verificationUrl');
+    const copyVerificationBtn = document.getElementById('copyVerification');
+    const certificateContent = document.getElementById('certificateContent');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const toastEl = document.getElementById('toast');
+
+    // ---------- Tabs ----------
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.dataset.tab;
+
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(tc => tc.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.getElementById(targetTab).classList.add('active');
+      });
+    });
+
+    // ---------- Domain normalization & validation ----------
+    function normalizeDomain(input) {
+      let d = (input || '').trim();
+
+      // Accept full URLs or hostnames
+      d = d.replace(/^https?:\/\//i, '');
+
+      // Strip credentials if pasted (rare but possible)
+      // e.g. user:pass@host
+      if (d.includes('@')) d = d.split('@').pop();
+
+      // Strip path/query/hash
+      d = d.split('/')[0].split('?')[0].split('#')[0];
+
+      // Strip port if any: example.com:8080
+      if (d.includes(':')) d = d.split(':')[0];
+
+      // Remove trailing dots
+      d = d.replace(/\.+$/, '');
+
+      d = d.toLowerCase();
+
+      // Basic hostname rules (ASCII)
+      // - labels: a-z 0-9 hyphen, cannot start/end with hyphen
+      // - dot-separated labels
+      if (!d) return '';
+      if (d.length > 253) return '';
+
+      const labels = d.split('.');
+      if (labels.some(l => !l.length)) return '';
+      for (const label of labels) {
+        if (label.length > 63) return '';
+        if (!/^[a-z0-9-]+$/.test(label)) return '';
+        if (label.startsWith('-') || label.endsWith('-')) return '';
+      }
+
+      // Must contain at least one dot for merchant domains (optional—comment out if not desired)
+      // if (labels.length < 2) return '';
+
+      return d;
+    }
+
+    function setVerificationState({ text, state }) {
+      verificationUrl.textContent = text;
+
+      verificationUrl.classList.remove('empty', 'invalid');
+      if (state === 'empty') verificationUrl.classList.add('empty');
+      if (state === 'invalid') verificationUrl.classList.add('invalid');
+
+      const ok = state === 'ok';
+      copyVerificationBtn.disabled = !ok;
+    }
+
+    // ---------- Certificate DOM builder (no innerHTML / no inline onclick) ----------
+    function createEl(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (typeof text === 'string') el.textContent = text;
+      return el;
+    }
+
+    function iconCopySvg() {
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "16");
+      svg.setAttribute("height", "16");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("stroke-linejoin", "round");
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("d", "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z");
+      svg.appendChild(path);
+      return svg;
+    }
+
+    function renderEmptyCertState() {
+      certificateContent.innerHTML = '';
+      const empty = createEl('div', 'empty-state');
+      empty.innerHTML = `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <p>Enter your domain to generate OpenSSL commands</p>
+      `;
+      certificateContent.appendChild(empty);
+    }
+
+    function buildCommandSection(stepNo, title, commandText) {
+      const section = createEl('div', 'code-section');
+
+      const header = createEl('div', 'step-header');
+      const num = createEl('div', 'step-number', String(stepNo));
+      const t = createEl('div', 'step-title', title);
+      header.appendChild(num);
+      header.appendChild(t);
+
+      const codeBlock = createEl('div', 'code-block');
+      const pre = createEl('pre', null, commandText);
+      codeBlock.appendChild(pre);
+
+      const btn = createEl('button', 'copy-btn');
+      btn.type = 'button';
+      btn.appendChild(iconCopySvg());
+      btn.appendChild(createEl('span', null, 'Copy Command'));
+      btn.addEventListener('click', async () => {
+        await copyToClipboard(commandText, btn);
+      });
+
+      section.appendChild(header);
+      section.appendChild(codeBlock);
+      section.appendChild(btn);
+
+      return section;
+    }
+
+    function renderCertificateCommands(domain) {
+      certificateContent.innerHTML = '';
+
+      // Label what these commands are for
+      const note = createEl('div', 'subtext',
+        'These OpenSSL commands generate an ECC (prime256v1) key and CSR (commonly used for Apple Pay Payment Processing certificates).'
+      );
+      certificateContent.appendChild(note);
+
+      const cmd1 = `openssl ecparam -genkey -name prime256v1 -out ${domain}.key`;
+      const cmd2 = `openssl req -new -key ${domain}.key -out ${domain}.csr`;
+
+      certificateContent.appendChild(buildCommandSection(1, 'Generate ECC Private Key', cmd1));
+      certificateContent.appendChild(buildCommandSection(2, 'Generate Certificate Signing Request (CSR)', cmd2));
+    }
+
+    // ---------- Clipboard with fallback ----------
+    function showToast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2200);
+    }
+
+    async function copyToClipboard(text, button) {
+      const originalHTML = button.innerHTML;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          // Fallback: hidden textarea + execCommand
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          ta.style.top = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (!ok) throw new Error('execCommand copy failed');
+        }
+
+        button.classList.add('copied');
+        button.innerHTML = `
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <span>Copied!</span>
+        `;
+        showToast('Copied to clipboard');
+
+        setTimeout(() => {
+          button.classList.remove('copied');
+          button.innerHTML = originalHTML;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+        showToast('Copy failed — please copy manually');
+      }
+    }
+
+    // ---------- Main logic ----------
+    function updateVerificationUrl(domain) {
+      const url = `https://${domain}/.well-known/apple-developer-merchantid-domain-association`;
+      setVerificationState({ text: url, state: 'ok' });
+    }
+
+    function resetAll() {
+      setVerificationState({
+        text: 'Enter your domain to generate verification path',
+        state: 'empty'
+      });
+      renderEmptyCertState();
+    }
+
+    function setInvalidDomain() {
+      setVerificationState({
+        text: 'Invalid domain. Please enter a hostname like: myshop.com (or paste a full URL).',
+        state: 'invalid'
+      });
+      renderEmptyCertState();
+    }
+
+    domainInput.addEventListener('input', (e) => {
+      const raw = e.target.value;
+      const domain = normalizeDomain(raw);
+
+      if (!raw.trim()) {
+        resetAll();
+        return;
+      }
+
+      if (!domain) {
+        setInvalidDomain();
+        return;
+      }
+
+      updateVerificationUrl(domain);
+      renderCertificateCommands(domain);
+    });
+
+    copyVerificationBtn.addEventListener('click', async () => {
+      const text = verificationUrl.textContent;
+      // Only copy if state is OK
+      if (copyVerificationBtn.disabled) return;
+      await copyToClipboard(text, copyVerificationBtn);
+    });
+
+    // Initial
+    resetAll();
+  </script>
+</body>
+</html>
