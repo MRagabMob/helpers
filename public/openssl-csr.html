@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Terminal Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f1419;
+            --term-bg: #1e1e1e;
+            --term-header: #2d2d2d;
+            --text-main: #f0f0f0;
+            --text-muted: #888;
+            --accent-green: #27c93f;
+            --accent-blue: #007aff;
+            --cmd-color: #fff;
+            --prompt-color: #27c93f;
+            --path-color: #569CD6;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-color);
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        /* Main Container */
+        .window {
+            width: 100%;
+            max-width: 900px;
+            background: var(--term-bg);
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        /* Header / Title Bar */
+        .header {
+            background: var(--term-header);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .dots { display: flex; gap: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        .title {
+            flex-grow: 1;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 50px;
+        }
+
+        /* Terminal Content Area */
+        .terminal-body {
+            padding: 20px;
+            height: 400px; /* Reduced height as we have fewer questions */
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.8;
+            cursor: text;
+        }
+
+        /* Line Styling */
+        .line {
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .prompt { color: var(--prompt-color); font-weight: bold; margin-right: 10px; }
+        .path { color: var(--path-color); margin-right: 10px; }
+        
+        /* Typed Text & Cursor */
+        .typed-text { color: var(--cmd-color); white-space: pre-wrap; }
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #ccc;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        /* Output Text Styles */
+        .output { color: #ccc; width: 100%; margin-bottom: 8px; display: block; }
+        .output.dim { color: #666; font-style: italic; }
+        .output.success { color: var(--accent-green); }
+        .output.warn { color: #ffbd2e; }
+
+        /* "Hit Enter" Popup Badge */
+        .enter-badge {
+            background: var(--accent-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 15px;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,122,255,0.3);
+            display: inline-flex;
+            align-items: center;
+        }
+        .enter-badge.show { opacity: 1; transform: translateY(0); }
+
+        /* Highlight Box for Critical Info */
+        .highlight-box {
+            border: 1px dashed var(--prompt-color);
+            background: rgba(39, 201, 63, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e1e1e; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="window">
+    <div class="header">
+        <div class="dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="title">merchant@server: ~/certificates</div>
+    </div>
+    <div class="terminal-body" id="terminal">
+        </div>
+</div>
+
+<script>
+    // Configuration
+    const terminal = document.getElementById('terminal');
+    const typingSpeed = 60; // Slower typing (higher ms)
+    const enterDelay = 2000; // Slower "Hit Enter" popup (2s)
+    const restartDelay = 20000; // 20 seconds loop
+
+    // Helper: Pause execution
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Helper: Create a new line element
+    function createLine() {
+        const line = document.createElement('div');
+        line.className = 'line';
+        terminal.appendChild(line);
+        return line;
+    }
+
+    // Helper: Create prompt span
+    function addPrompt(lineElement) {
+        lineElement.innerHTML = `<span class="prompt">➜</span><span class="path">~/certificates</span>`;
+    }
+
+    // Core Animation Function: Type Text
+    async function type(text, lineElement) {
+        const span = document.createElement('span');
+        span.className = 'typed-text';
+        lineElement.appendChild(span);
+        
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        lineElement.appendChild(cursor);
+
+        terminal.scrollTop = terminal.scrollHeight;
+
+        for (let char of text) {
+            span.textContent += char;
+            await wait(Math.random() * 30 + typingSpeed); // Slower typing
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        cursor.remove();
+        return span;
+    }
+
+    // Core Animation Function: Show "Hit Enter" popup
+    async function showEnterPopup(lineElement) {
+        const badge = document.createElement('span');
+        badge.className = 'enter-badge';
+        badge.innerHTML = 'Hit Enter ↵';
+        lineElement.appendChild(badge);
+        
+        await wait(100);
+        badge.classList.add('show');
+        
+        await wait(enterDelay); // Wait longer for user to read
+        
+        badge.classList.remove('show');
+        await wait(500); 
+        badge.remove();
+    }
+
+    // Helper: Add Output Text
+    async function addOutput(text, className = 'output') {
+        const div = document.createElement('div');
+        div.className = className;
+        div.innerHTML = text; 
+        terminal.appendChild(div);
+        terminal.scrollTop = terminal.scrollHeight;
+        await wait(400); // Slower pacing between outputs
+    }
+
+    // --- THE SCRIPT ---
+    async function runTerminal() {
+        terminal.innerHTML = ''; // Clear
+        await wait(1000);
+
+        // STEP 1: Command
+        const line1 = createLine();
+        addPrompt(line1);
+        await wait(800);
+        await type('openssl req -new -key payment.key -out payment.csr', line1);
+        await showEnterPopup(line1);
+
+        // STEP 2: Outputs
+        await addOutput('You are about to be asked to enter information that will be incorporated', 'output dim');
+        await addOutput('into your certificate request.', 'output dim');
+        await addOutput('-----', 'output dim');
+
+        // STEP 3: Form Inputs
+        
+        // Field 1: Country
+        const lineC = createLine();
+        lineC.innerHTML = '<span class="output" style="width:auto; margin-right:10px;">Country Name (2 letter code) [AU]:</span>';
+        await wait(1000);
+        await type('AE', lineC);
+        await showEnterPopup(lineC);
+
+        // Field 2: Common Name (CRITICAL)
+        const lineCN = createLine();
+        lineCN.innerHTML = '<span class="output" style="width:auto; margin-right:10px;">Common Name (e.g. server FQDN or YOUR name) []:</span>';
+        await wait(800);
+        
+        // Add Note
+        await addOutput('<span class="warn">⚠ Important: Type your website domain here (without https://)</span>', 'output dim');
+        await wait(800);
+
+        const cnText = await type('myshop.com', lineCN);
+        cnText.classList.add('highlight-box'); // Visual highlight
+        await showEnterPopup(lineCN);
+
+        // Success
+        await wait(800);
+        await addOutput('✓ CSR generated successfully: payment.csr', 'output success');
+        
+        // Final Prompt
+        const finalLine = createLine();
+        addPrompt(finalLine);
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        finalLine.appendChild(cursor);
+
+        // Loop - Wait 20 seconds
+        await wait(restartDelay);
+        runTerminal();
+    }
+
+    // Start
+    runTerminal();
+
+</script>
+
+</body>
+</html>

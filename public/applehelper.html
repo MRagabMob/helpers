@@ -1,0 +1,525 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Pay Integration Helper</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0066CC;
+            --primary-hover: #0052A3;
+            --success: #00C853;
+            --warning: #FF6B35;
+            --bg-main: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --border: #E2E8F0;
+            --text-primary: #1A202C;
+            --text-secondary: #64748B;
+            --code-bg: #F1F5F9;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            padding: 24px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            margin-bottom: 32px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        
+        .header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        
+        .input-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: var(--bg-main);
+        }
+        
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        .input-wrapper input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab:hover {
+            color: var(--primary);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .output-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+        
+        .output-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .output-title svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .url-display {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            word-break: break-all;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+        
+        .url-display.empty {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .copy-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+        
+        .copy-btn.copied {
+            background: var(--success);
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #FFF4E6 0%, #FFE8CC 100%);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: start;
+        }
+        
+        .warning-box svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: var(--warning);
+        }
+        
+        .warning-box p {
+            font-size: 14px;
+            color: #8B4513;
+            margin: 0;
+        }
+        
+        .code-block {
+            background: #1E293B;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .code-block pre {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: #E2E8F0;
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .code-block .command {
+            color: #38BDF8;
+        }
+        
+        .code-block .variable {
+            color: #FB923C;
+        }
+        
+        .code-section {
+            margin-bottom: 24px;
+        }
+        
+        .code-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="domain">Merchant Domain</label>
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="domain" 
+                        placeholder="myshop.com" 
+                        autocomplete="off"
+                    />
+                </div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="verification">
+                Domain Verification
+            </button>
+            <button class="tab" data-tab="certificate">
+                Certificate Generation
+            </button>
+        </div>
+        
+        <div class="tab-content active" id="verification">
+            <div class="output-card">
+                <div class="output-title">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Verification File Path
+                </div>
+                
+                <div class="url-display empty" id="verificationUrl">
+                    Enter your domain to generate verification path
+                </div>
+                
+                <button class="copy-btn" id="copyVerification" disabled>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Copy URL</span>
+                </button>
+                
+                <div class="warning-box">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <p><strong>Important:</strong> Do not add <code>.txt</code> or <code>.json</code> extensions to this file. Apple Pay requires the exact filename without any extension.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="certificate">
+            <div class="output-card">
+                <div id="certificateContent">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p>Enter your domain to generate OpenSSL commands</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const domainInput = document.getElementById('domain');
+        const verificationUrl = document.getElementById('verificationUrl');
+        const copyVerificationBtn = document.getElementById('copyVerification');
+        const certificateContent = document.getElementById('certificateContent');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+        
+        domainInput.addEventListener('input', (e) => {
+            const domain = e.target.value.trim();
+            
+            if (domain) {
+                updateVerificationUrl(domain);
+                updateCertificateCommands(domain);
+            } else {
+                resetVerificationUrl();
+                resetCertificateCommands();
+            }
+        });
+        
+        function updateVerificationUrl(domain) {
+            const url = `https://${domain}/.well-known/apple-developer-merchantid-domain-association`;
+            verificationUrl.textContent = url;
+            verificationUrl.classList.remove('empty');
+            copyVerificationBtn.disabled = false;
+        }
+        
+        function resetVerificationUrl() {
+            verificationUrl.textContent = 'Enter your domain to generate verification path';
+            verificationUrl.classList.add('empty');
+            copyVerificationBtn.disabled = true;
+        }
+        
+        function updateCertificateCommands(domain) {
+            certificateContent.innerHTML = `
+                <div class="code-section">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Generate ECC Private Key</div>
+                    </div>
+                    <div class="code-block">
+                        <pre><span class="command">openssl ecparam -genkey -name prime256v1 -out</span> <span class="variable">${domain}.key</span></pre>
+                    </div>
+                    <button class="copy-btn" onclick="copyCommand('openssl ecparam -genkey -name prime256v1 -out ${domain}.key', this)">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Copy Command</span>
+                    </button>
+                </div>
+                
+                <div class="code-section">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Generate Certificate Signing Request (CSR)</div>
+                    </div>
+                    <div class="code-block">
+                        <pre><span class="command">openssl req -new -key</span> <span class="variable">${domain}.key</span> <span class="command">-out</span> <span class="variable">${domain}.csr</span></pre>
+                    </div>
+                    <button class="copy-btn" onclick="copyCommand('openssl req -new -key ${domain}.key -out ${domain}.csr', this)">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Copy Command</span>
+                    </button>
+                </div>
+            `;
+        }
+        
+        function resetCertificateCommands() {
+            certificateContent.innerHTML = `
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p>Enter your domain to generate OpenSSL commands</p>
+                </div>
+            `;
+        }
+        
+        copyVerificationBtn.addEventListener('click', async () => {
+            const url = verificationUrl.textContent;
+            await copyToClipboard(url, copyVerificationBtn);
+        });
+        
+        window.copyCommand = async (command, button) => {
+            await copyToClipboard(command, button);
+        };
+        
+        async function copyToClipboard(text, button) {
+            try {
+                await navigator.clipboard.writeText(text);
+                
+                const originalHTML = button.innerHTML;
+                button.classList.add('copied');
+                button.innerHTML = `
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>Copied!</span>
+                `;
+                
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = originalHTML;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+    </script>
+</body>
+</noscript>
+<div style="text-align: center;"><div style="position:relative; top:0; margin-right:auto;margin-left:auto; z-index:99999">
+
+</div></div>
+</html>
