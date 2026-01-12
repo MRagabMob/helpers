@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 280" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" aria-labelledby="svgTitle svgDesc" role="img">
+  <title id="svgTitle">Paymob Payment Links: Create, Share, Get Paid</title>
+  <desc id="svgDesc">An animated timeline showing three steps: Creating a Paymob link, sharing it via social channels, and receiving payments tracked in a dashboard.</desc>
+
+  <defs>
+    <linearGradient id="paymobGrad" x1="0%" y1="0%" x2="100%" x2="100%">
+      <stop offset="0%" style="stop-color:#0033FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00A3FF;stop-opacity:1" />
+    </linearGradient>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+      
+      text { font-family: 'Inter', sans-serif; pointer-events: none; }
+      .label { font-weight: 700; font-size: 18px; fill: #1A1C1F; }
+      .sub-label { font-weight: 500; font-size: 13px; fill: #64748B; }
+      
+      /* Timeline Flow Animation */
+      .flow-line {
+        stroke-dasharray: 8, 12;
+        animation: lineFlow 30s linear infinite;
+      }
+      @keyframes lineFlow {
+        from { stroke-dashoffset: 500; }
+        to { stroke-dashoffset: 0; }
+      }
+
+      /* Step 1: Create - Pulse the button and Link generation */
+      .btn-pulse {
+        animation: btnPulse 2s ease-in-out infinite;
+        transform-origin: 100px 120px;
+      }
+      @keyframes btnPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.03); opacity: 0.9; }
+      }
+
+      /* Step 2: Share - Floating social icons */
+      .float-icon { animation: float 4s ease-in-out infinite; }
+      .float-icon-delay { animation: float 4s ease-in-out infinite 1s; }
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+      }
+
+      /* Step 3: Get Paid - Chart drawing and Success Pulse */
+      .draw-chart {
+        stroke-dasharray: 200;
+        stroke-dashoffset: 200;
+        animation: draw 3s ease-out forwards infinite;
+        animation-delay: 1s;
+      }
+      @keyframes draw {
+        0% { stroke-dashoffset: 200; }
+        50%, 100% { stroke-dashoffset: 0; }
+      }
+      .success-glow {
+        animation: glow 2s ease-in-out infinite;
+      }
+      @keyframes glow {
+        0%, 100% { filter: drop-shadow(0 0 2px rgba(22, 194, 161, 0.4)); }
+        50% { filter: drop-shadow(0 0 10px rgba(22, 194, 161, 0.8)); }
+      }
+
+      /* Theming */
+      .card-bg { fill: #FFFFFF; stroke: #E2E8F0; }
+      @media (prefers-color-scheme: dark) {
+        .label { fill: #F8FAFC; }
+        .sub-label { fill: #94A3B8; }
+        .card-bg { fill: #111827; stroke: #374151; }
+        .ui-mute { fill: #1F2937; }
+      }
+      @media (prefers-color-scheme: light) {
+        .ui-mute { fill: #F8FAFC; }
+      }
+    </style>
+
+    <symbol id="icon-wa" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.284l-.582 2.128 2.183-.573c.945.594 1.94.914 3.141.914 3.182 0 5.769-2.587 5.77-5.766.001-3.181-2.585-5.765-5.763-5.765zm3.392 8.204c-.142.399-.714.733-1.157.78-.394.041-.91.069-1.464-.112-.303-.099-.68-.224-1.141-.423-1.966-.848-3.238-2.854-3.336-2.986-.098-.133-.798-.951-.798-1.811 0-.86.452-1.282.613-1.441.16-.159.35-.198.467-.198.117 0 .234.001.336.005.109.004.254-.041.398.305.144.346.492 1.199.534 1.284.043.085.071.184.014.298-.057.113-.085.184-.17.283-.085.099-.178.22-.254.297-.085.085-.174.178-.075.348.099.17.439.723.943 1.171.648.577 1.193.756 1.363.841.17.085.269.071.37-.043.099-.113.439-.51.553-.68.114-.17.227-.142.383-.085.156.057.992.467 1.162.552.17.085.283.127.326.198.042.071.042.412-.1.811z" fill="#25D366"/></symbol>
+    <symbol id="icon-ig" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.981 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" fill="#E4405F"/></symbol>
+  </defs>
+
+  <path d="M150,140 L830,140" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" />
+  <path class="flow-line" d="M150,140 L830,140" stroke="url(#paymobGrad)" stroke-width="4" stroke-linecap="round" />
+
+  <g transform="translate(60, 40)">
+    <rect x="0" y="0" width="180" height="130" rx="12" class="card-bg" stroke-width="2" />
+    <rect x="0" y="0" width="180" height="28" rx="12" class="ui-mute" />
+    <circle cx="15" cy="14" r="3" fill="#FF5F56"/><circle cx="27" cy="14" r="3" fill="#FFBD2E"/><circle cx="39" cy="14" r="3" fill="#27C93F"/>
+    
+    <rect x="15" y="45" width="150" height="8" rx="4" fill="#E2E8F0" />
+    <rect x="15" y="62" width="100" height="8" rx="4" fill="#E2E8F0" />
+    
+    <g class="btn-pulse">
+      <rect x="15" y="85" width="150" height="28" rx="6" fill="#0033FF" />
+      <text x="90" y="103" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Create Link</text>
+    </g>
+
+    <circle cx="90" cy="150" r="18" fill="white" stroke="#0033FF" stroke-width="2" />
+    <text x="90" y="155" text-anchor="middle" fill="#0033FF" font-size="14" font-weight="bold">1</text>
+  </g>
+  <text x="150" y="235" text-anchor="middle" class="label">Create</text>
+  <text x="150" y="255" text-anchor="middle" class="sub-label">Instant payment URLs</text>
+
+  <g transform="translate(400, 40)">
+    <g class="float-icon">
+      <circle cx="90" cy="65" r="45" fill="url(#paymobGrad)" opacity="0.1" />
+      <circle cx="90" cy="65" r="32" class="card-bg" stroke-width="2" />
+      <path d="M82,65 L98,65 M86,60 L82,65 L86,70 M94,60 L98,65 L94,70" fill="none" stroke="#0033FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <use href="#icon-wa" x="125" y="10" width="24" height="24" class="float-icon" />
+    <use href="#icon-ig" x="145" y="60" width="22" height="22" class="float-icon-delay" />
+    <rect x="30" y="15" width="35" height="18" rx="9" fill="#0033FF" opacity="0.9" class="float-icon-delay" />
+    <text x="47.5" y="27" text-anchor="middle" fill="white" font-size="8" font-weight="bold">SMS</text>
+    
+    <circle cx="90" cy="150" r="18" fill="white" stroke="#0033FF" stroke-width="2" />
+    <text x="90" y="155" text-anchor="middle" fill="#0033FF" font-size="14" font-weight="bold">2</text>
+  </g>
+  <text x="490" y="235" text-anchor="middle" class="label">Share</text>
+  <text x="490" y="255" text-anchor="middle" class="sub-label">WA, IG, FB, SMS, Email</text>
+
+  <g transform="translate(740, 40)">
+    <rect x="0" y="0" width="180" height="130" rx="12" class="card-bg" stroke-width="2" />
+    
+    <rect x="15" y="15" width="150" height="45" rx="8" class="ui-mute" />
+    <path class="draw-chart" d="M25,50 L50,35 L75,42 L110,25 L155,30" fill="none" stroke="#00A3FF" stroke-width="2.5" stroke-linecap="round" />
+    
+    <g class="success-glow">
+      <circle cx="155" cy="30" r="4" fill="#16C2A1" />
+      <text x="25" y="85" fill="#1A1C1F" font-size="13" font-weight="bold" class="label">EGP 1,250.00</text>
+      <rect x="25" y="95" width="65" height="14" rx="4" fill="#16C2A1" fill-opacity="0.1" />
+      <text x="57.5" y="105" text-anchor="middle" fill="#16C2A1" font-size="9" font-weight="bold">SUCCESS</text>
+    </g>
+
+    <circle cx="90" cy="150" r="18" fill="white" stroke="#0033FF" stroke-width="2" />
+    <text x="90" y="155" text-anchor="middle" fill="#0033FF" font-size="14" font-weight="bold">3</text>
+  </g>
+  <text x="830" y="235" text-anchor="middle" class="label">Get Paid</text>
+  <text x="830" y="255" text-anchor="middle" class="sub-label">Checkout & Analytics</text>
+</svg>
