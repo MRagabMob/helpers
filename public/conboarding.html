@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paymob Integration Widget</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6C5CE7;
+      --primary-dark: #5B4CFF;
+      --primary-light: #A29BFE;
+      --secondary: #00D4AA;
+      --dark: #0F0F23;
+      --text-primary: #2D3436;
+      --text-secondary: #636E72;
+      --text-muted: #95A5A6;
+      --bg-card: transparent; 
+      --border: #E1E8ED;
+      --border-light: #F1F3F5;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --transition: all 0.2s ease-in-out;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body { min-height: 100%; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: transparent; 
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 15px;
+      margin: 0;
+      /* Allow scroll if resize fails, but hide by default for clean look */
+      overflow-y: auto; 
+      padding-bottom: 2rem;
+    }
+
+    .container { width: 100%; max-width: 100%; }
+    
+    /* Clean Card Style */
+    .card {
+      background: transparent;
+      box-shadow: none;
+      border: none;
+      padding: 0 4px;
+    }
+    
+    .card-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 0;
+      border-bottom: none; 
+    }
+    
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    .card-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .col-12 { grid-column: span 12; }
+    .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; }
+    .col-3 { grid-column: span 3; }
+    
+    @media (max-width: 700px) {
+      .col-6, .col-4, .col-3 { grid-column: span 12; }
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .label-badge {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .select-wrapper { position: relative; }
+    
+    .flag-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .flag-icon img { width: 100%; border-radius: 2px; }
+    
+    select {
+      width: 100%;
+      padding: 0.75rem 2rem 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .select-wrapper.with-flag select { padding-left: 3.5rem; }
+    
+    select:hover { border-color: var(--primary-light); }
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+    }
+    
+    .help-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+      background: transparent; 
+      padding: 0;
+      border: none;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: white; 
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    
+    .checkbox-item:hover { 
+      border-color: var(--primary); 
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .checkbox-item input {
+      accent-color: var(--primary);
+      width: 16px; 
+      height: 16px;
+      cursor: pointer;
+    }
+    
+    .checkbox-item label {
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+      padding-bottom: 5px;
+    }
+    
+    button {
+      appearance: none;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover { 
+      background: var(--primary-dark); 
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .btn-secondary:hover { 
+      border-color: var(--primary); 
+      color: var(--primary); 
+    }
+    
+    .hidden { display: none !important; }
+    .divider { height: 1px; background: var(--border-light); margin: 2rem 0; }
+    
+    .toast {
+      font-size: 0.85rem;
+      color: #00BF99;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+      align-self: center;
+    }
+    .toast.show { opacity: 1; }
+
+    /* --- ROADMAP STYLES (Restored & Cleaned) --- */
+    
+    #output {
+      display: none; /* Hidden until generated */
+      margin-top: 2rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .summary-chips {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .chip {
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .chip img { width: 20px; border-radius: 2px; }
+
+    .roadmap {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .stage-marker {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stage-marker::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: calc(100% + 1.5rem);
+      background: var(--border-light);
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 0;
+    }
+
+    .stage:last-child .stage-marker::after { display: none; }
+
+    .stage-content {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      /* Subtle shadow for steps */
+      box-shadow: var(--shadow-sm); 
+    }
+
+    .stage-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.75rem;
+    }
+
+    .stage-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .stage-list li {
+      position: relative;
+      padding-left: 1rem;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .stage-list li::before {
+      content: "•";
+      color: var(--primary);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    .stage-list li a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .stage-list li a:hover { text-decoration: underline; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="app">
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">Configure Your Integration</h2>
+        <p class="card-subtitle">Tell us about your needs so we can create the perfect roadmap for you</p>
+      </div>
+
+      <div class="form-grid">
+        <div class="col-4 form-group">
+          <label for="persona">Who are you? <span class="label-badge">Required</span></label>
+          <div class="select-wrapper">
+            <select id="persona">
+              <option value="merchant">Merchant (non-technical)</option>
+              <option value="developer">Developer / Engineer</option>
+            </select>
+          </div>
+          <span class="help-text">This personalizes your experience</span>
+        </div>
+
+        <div class="col-4 form-group">
+          <label for="country">Region / Country <span class="label-badge">Required</span></label>
+          <div class="select-wrapper with-flag">
+            <span class="flag-icon" id="flagIcon"></span>
+            <select id="country"></select>
+          </div>
+          <span class="help-text">Affects payment methods and settlement</span>
+        </div>
+
+        <div class="col-4 form-group">
+          <label for="platform">Integration Path <span class="label-badge">Required</span></label>
+          <div class="select-wrapper">
+            <select id="platform"></select>
+          </div>
+          <span class="help-text">Options adapt to your role</span>
+        </div>
+
+        <div class="col-6 form-group" id="merchantFields">
+          <label for="storefront">Your E-Commerce Platform</label>
+          <div class="select-wrapper">
+            <select id="storefront">
+              <option value="none">No online store yet</option>
+              <option value="shopify">Shopify</option>
+              <option value="woocommerce">WooCommerce</option>
+              <option value="magento">Magento</option>
+              <option value="opencart">OpenCart</option>
+              <option value="prestashop">PrestaShop</option>
+              <option value="odoo">Odoo</option>
+            </select>
+          </div>
+          <span class="help-text">Plugin guides with screenshots</span>
+        </div>
+
+        <div class="col-3 form-group hidden" id="devBackend">
+          <label for="backend">Backend Language</label>
+          <div class="select-wrapper">
+            <select id="backend"></select>
+          </div>
+          <span class="help-text">For API examples</span>
+        </div>
+
+        <div class="col-3 form-group hidden" id="devSdk">
+          <label for="sdk">Client SDK / Platform</label>
+          <div class="select-wrapper">
+            <select id="sdk">
+              <option value="web">Web (Unified Checkout)</option>
+              <option value="ios">iOS</option>
+              <option value="android">Android</option>
+              <option value="flutter">Flutter</option>
+              <option value="reactnative">React Native</option>
+            </select>
+          </div>
+          <span class="help-text">Mobile platform</span>
+        </div>
+
+        <div class="col-12 form-group">
+          <label>Payment Features &amp; Requirements</label>
+          <div class="checkbox-group" id="features"></div>
+          <span class="help-text" id="featureHints">Select all features you need</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="button-group">
+        <button class="btn-primary" id="generate">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Generate Roadmap</span>
+        </button>
+        <button class="btn-secondary" id="copy">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span>Copy Markdown</span>
+        </button>
+        <button class="btn-secondary" id="export">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+          <span>Export JSON</span>
+        </button>
+        <span class="toast" id="toast"></span>
+      </div>
+      
+      <div id="output">
+        <div class="divider"></div>
+        <div class="card-header">
+           <h2 class="card-title">Your Integration Roadmap</h2>
+           <p class="card-subtitle">Follow these steps for a smooth integration</p>
+        </div>
+        
+        <div class="summary-chips" id="summaryChips"></div>
+        <div class="roadmap" id="plan"></div>
+      </div>
+
+    </section>
+  </div>
+
+  <script>
+  (function() {
+    // --- 1. FULL CONFIGURATION LOGIC ---
+    const CONFIG = {
+      version: "3.0.0",
+      baseUrl: "https://developers.paymob.com",
+      storageKey: "paymob_onboarding_v3",
+      
+      regions: {
+        UAE: {
+          label: "United Arab Emirates",
+          flagUrl: "https://flagcdn.com/w80/ae.png",
+          slug: "uae",
+          routes: {
+            gettingStarted: "/uae/getting-started-uae",
+            dashboard: "/uae/accept-dashboard",
+            profile: "/uae/accept-dashboard/profile",
+            paymentIntegrations: "/uae/accept-dashboard/payment-integrations",
+            apiBasics: "/uae/api-reference-guide/basics-of-api",
+            apiSetup: "/uae/api-reference-guide/api-setup-secret-and-public-key",
+            unifiedIntention: "/uae/api-reference-guide/create-intention-payment-api",
+            subscriptions: "/uae/subscriptions",
+            paymentLinks: "/uae/payment-links",
+            quickLink: "/uae/payment-links/payment-link-quick-link",
+            paymentLinkAPI: "/uae/payment-links/payment-link-api",
+            threeDSecure: "/uae/payment-types/3ds",
+            authCapture: "/uae/payment-types/auth-and-capture",
+            savedToken: "/uae/payment-types/pay-with-saved-token-moto",
+            refundAPI: "/uae/payment-actions/api-level/refund-transaction",
+            callbacks: "/uae/manage-callback/transaction-callbacks-copy",
+            hmac: "/uae/manage-callback/hmac-calculation-copy",
+            faqs: "/uae/faqs-latest-1/faqs-latest",
+            troubleshooting: "/uae/faqs-latest-1/troubleshooting-latest-copy-1",
+            plugins: {
+              shopify: "/uae/e-commerce-plugins/shopify",
+              woocommerce: "/uae/e-commerce-plugins/wordpress-woocommerce",
+              wooConfig: "/uae/e-commerce-plugins/wordpress-woocommerce/setting-up-the-main-configuration-copy-2",
+              magento: "/uae/e-commerce-plugins/magento",
+              opencart: "/uae/e-commerce-plugins/opencart",
+              prestashop: "/uae/e-commerce-plugins/prestashop",
+              odoo: "/uae/e-commerce-plugins/odoo-4"
+            },
+            sdks: {
+              ios: "/uae/mobile-sdks/mobile-sdks-v2/ios-sdk",
+              android: "/uae/mobile-sdks/mobile-sdks-v2/android-sdk-1",
+              flutter: "/uae/mobile-sdks/mobile-sdks-v2/flutter-sdk",
+              reactnative: "/uae/mobile-sdks/mobile-sdks-v2/react-native-sdk"
+            },
+            paymentMethods: {
+              card: "/uae/payment-methods-copy-1/card",
+              tabby: "/uae/payment-methods-copy-1/tabby-4",
+              tamara: "/uae/payment-methods-copy-1/tamara-3",
+              applePay: "/uae/payment-methods-copy-1/apple-pay-3",
+              googlePay: "/uae/payment-methods-copy-1/google-pay-1"
+            }
+          }
+        },
+        EGYPT: { label: "Egypt", flagUrl: "https://flagcdn.com/w80/eg.png", slug: "egypt", routes: { gettingStarted: "/egypt/getting-started", dashboard: "/egypt/accept-dashboard" } },
+        KSA: { label: "Saudi Arabia", flagUrl: "https://flagcdn.com/w80/sa.png", slug: "ksa", routes: { gettingStarted: "/ksa/getting-started", dashboard: "/ksa/accept-dashboard" } },
+        OMAN: { label: "Oman", flagUrl: "https://flagcdn.com/w80/om.png", slug: "oman", routes: { gettingStarted: "/oman/getting-started", dashboard: "/oman/accept-dashboard" } },
+        PAKISTAN: { label: "Pakistan", flagUrl: "https://flagcdn.com/w80/pk.png", slug: "pakistan", routes: { gettingStarted: "/pakistan/getting-started", dashboard: "/pakistan/accept-dashboard" } }
+      },
+      
+      integrationPaths: {
+        merchant: ["merchant_plugin", "merchant_paymentlink", "merchant_dashboard"],
+        developer: ["custom_web", "mobile_sdk", "dev_paymentlink"]
+      },
+      
+      backends: {
+        none: { label: "Not applicable" },
+        nodejs: { label: "Node.js" },
+        python: { label: "Python" },
+        php: { label: "PHP" },
+        java: { label: "Java" },
+        dotnet: { label: ".NET (C#)" },
+        ruby: { label: "Ruby" }
+      },
+      
+      features: [
+        { id: "cards", label: "Card Payments", persona: "both" },
+        { id: "wallets", label: "Apple Pay / Google Pay", persona: "both" },
+        { id: "bnpl", label: "Buy Now Pay Later (Tabby/Tamara)", persona: "both" },
+        { id: "subscriptions", label: "Recurring Payments / Subscriptions", persona: "both" },
+        { id: "split", label: "Split Payments", persona: "developer" },
+        { id: "authcapture", label: "Auth & Capture", persona: "both" },
+        { id: "refunds", label: "Refunds", persona: "both" },
+        { id: "savedcards", label: "Save Card for Future Use", persona: "both" },
+        { id: "3ds", label: "3D Secure", persona: "developer" },
+        { id: "callbacks", label: "Webhooks / Callbacks", persona: "developer" }
+      ]
+    };
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    // --- 2. HELPER FUNCTIONS ---
+    function route(country, key) {
+      const region = CONFIG.regions[country];
+      if (!region || !region.routes) return '#';
+      const path = region.routes[key];
+      return path ? CONFIG.baseUrl + path : '#';
+    }
+
+    function link(text, path, external = false) {
+      if (!path || path === '#') return text;
+      const href = path.startsWith('http') ? path : CONFIG.baseUrl + path;
+      return `<a href="${href}"${external ? ' target="_blank" rel="noopener"' : ''}>${text}</a>`;
+    }
+
+    function pluginLine(storefront, country) {
+      const plugins = CONFIG.regions[country]?.routes?.plugins || {};
+      const pluginMap = {
+        shopify: { key: 'shopify', name: 'Shopify' },
+        woocommerce: { key: 'woocommerce', name: 'WooCommerce' },
+        magento: { key: 'magento', name: 'Magento' },
+        opencart: { key: 'opencart', name: 'OpenCart' },
+        prestashop: { key: 'prestashop', name: 'PrestaShop' },
+        odoo: { key: 'odoo', name: 'Odoo' }
+      };
+      
+      const plugin = pluginMap[storefront];
+      if (!plugin) return 'Follow plugin documentation';
+      return link(`${plugin.name} Plugin Guide`, plugins[plugin.key], true);
+    }
+    
+    // Use Memory fallback for localStorage in iframes to prevent access errors
+    let memoryState = {};
+    function saveState(state) {
+      memoryState = state;
+      try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(state)); } catch(e) {}
+    }
+
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(CONFIG.storageKey) || '{}'); } 
+      catch { return memoryState; }
+    }
+
+    function updateFlagDisplay() {
+      const country = $('#country').value;
+      const flagUrl = CONFIG.regions[country]?.flagUrl;
+      const flagIcon = $('#flagIcon');
+      if (flagUrl) flagIcon.innerHTML = `<img src="${flagUrl}" alt="${country} flag" />`;
+      else flagIcon.innerHTML = '';
+    }
+
+    // --- 3. PLAN BUILDING LOGIC ---
+    function buildPlan(state) {
+      const steps = [];
+      const { persona, country, platform, storefront, backend, sdk, features } = state;
+      const isMerchant = persona === 'merchant';
+      
+      const accountItems = [
+        `Sign up at ${link('Paymob Portal', 'https://uae.paymob.com/portal2/en/register', true)}`,
+        'Complete KYC verification (business documents, ID)',
+        `Access your dashboard and review ${link('Getting Started Guide', route(country, 'gettingStarted'), true)}`,
+        'Verify test mode is enabled for development'
+      ];
+      steps.push(stage('Account Setup & Verification', accountItems, 1));
+      
+      const integrationItems = [];
+      if (isMerchant && platform === 'merchant_plugin' && storefront !== 'none') {
+        integrationItems.push(
+          `Install ${pluginLine(storefront, country)}`,
+          `Locate API keys: Dashboard → ${link('Settings → Account Info', route(country, 'profile'), true)}`,
+          'Copy Public Key, Secret Key, and Integration IDs',
+          `Configure plugin with ${link('step-by-step screenshots', CONFIG.regions[country]?.routes?.plugins?.wooConfig || '#', true)}`
+        );
+      } else if (platform === 'custom_web') {
+        integrationItems.push(
+          `Read ${link('API Basics', route(country, 'apiBasics'), true)} to understand authentication`,
+          `Generate API keys from ${link('Dashboard Settings', route(country, 'apiSetup'), true)}`,
+          `Review ${link('Unified Intention API', route(country, 'unifiedIntention'), true)} for payment flow`,
+          backend !== 'none' ? `Use ${CONFIG.backends[backend]?.label} SDK/examples` : 'Choose your backend language'
+        );
+      } else if (platform === 'mobile_sdk') {
+        integrationItems.push(
+          `Download and install ${link(sdk === 'ios' ? 'iOS SDK' : sdk === 'android' ? 'Android SDK' : `${sdk} SDK`, CONFIG.regions[country]?.routes?.sdks?.[sdk] || '#', true)}`,
+          `Get API keys from ${link('Dashboard', route(country, 'apiSetup'), true)}`,
+          'Initialize SDK with your keys',
+          'Configure SDK for test mode first'
+        );
+      } else if (platform === 'merchant_paymentlink' || platform === 'dev_paymentlink') {
+        integrationItems.push(
+          `Learn about ${link('Payment Links', route(country, 'paymentLinks'), true)}`,
+          platform === 'merchant_paymentlink' 
+            ? `Create ${link('Quick Links', route(country, 'quickLink'), true)} from dashboard`
+            : `Use ${link('Payment Link API', route(country, 'paymentLinkAPI'), true)} to generate links programmatically`,
+          'Configure link parameters',
+          'Test with sandbox credentials'
+        );
+      } else {
+        integrationItems.push('Access dashboard to manage payments', 'No technical integration required');
+      }
+      steps.push(stage('Choose & Configure Integration', integrationItems, 2));
+      
+      const paymentItems = [
+        features.includes('cards') ? `Enable ${link('Card Payments', CONFIG.regions[country]?.routes?.paymentMethods?.card || '#', true)}` : null,
+        features.includes('wallets') ? `Set up ${link('Apple Pay', CONFIG.regions[country]?.routes?.paymentMethods?.applePay || '#', true)} & ${link('Google Pay', CONFIG.regions[country]?.routes?.paymentMethods?.googlePay || '#', true)}` : null,
+        features.includes('bnpl') ? `Configure ${link('Tabby', CONFIG.regions[country]?.routes?.paymentMethods?.tabby || '#', true)} / ${link('Tamara', CONFIG.regions[country]?.routes?.paymentMethods?.tamara || '#', true)}` : null,
+        features.includes('3ds') ? `Implement ${link('3D Secure', route(country, 'threeDSecure'), true)}` : null
+      ].filter(Boolean);
+      
+      if (paymentItems.length === 0) paymentItems.push('Select payment features above to see specific setup steps');
+      steps.push(stage('Payment Methods Configuration', paymentItems, 3));
+      
+      const featureItems = [];
+      if (features.includes('subscriptions')) featureItems.push(`Set up ${link('Recurring Subscriptions', route(country, 'subscriptions'), true)}`);
+      if (features.includes('authcapture')) featureItems.push(`Implement ${link('Auth & Capture', route(country, 'authCapture'), true)}`);
+      if (features.includes('refunds')) featureItems.push(`Configure ${link('Refund API', route(country, 'refundAPI'), true)}`);
+      if (features.includes('savedcards')) featureItems.push(`Enable ${link('Card Tokenization', route(country, 'savedToken'), true)}`);
+      if (features.includes('callbacks')) featureItems.push(`Set up ${link('Webhooks', route(country, 'callbacks'), true)} & HMAC`);
+      
+      if (featureItems.length === 0) featureItems.push('Basic payment flow is ready', 'Add advanced features as needed');
+      steps.push(stage('Advanced Features & Customization', featureItems, 4));
+      
+      const goLiveItems = [
+        'Switch from TEST to LIVE mode in dashboard',
+        'Replace test API keys with production keys',
+        'Verify production webhook URLs',
+        features.includes('wallets') ? 'Complete Apple Pay / Google Pay domain verification' : null,
+        'Monitor first transactions closely',
+        `Review ${link('FAQs', route(country, 'faqs'), true)}`,
+        'Contact support@paymob.com if needed'
+      ].filter(Boolean);
+      steps.push(stage('Go Live Checklist', goLiveItems, 6)); // Skipping 5 for brevity in embed
+      
+      return steps;
+    }
+
+    function stage(title, items, number) {
+      const html = `
+        <div class="stage">
+          <div class="stage-marker">${number}</div>
+          <div class="stage-content">
+            <h3 class="stage-title">${title}</h3>
+            <ul class="stage-list">
+              ${items.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+      return { title, html, number };
+    }
+
+    // --- 4. RENDER UI ---
+    function renderPlan(steps, state) {
+      const chipsDiv = $('#summaryChips');
+      const planDiv = $('#plan');
+      
+      chipsDiv.innerHTML = '';
+      const regionInfo = CONFIG.regions[state.country];
+      
+      const chips = [
+        { text: state.persona === 'merchant' ? 'Merchant' : 'Developer', hasFlag: false },
+        { text: regionInfo?.label || state.country, flagUrl: regionInfo?.flagUrl, hasFlag: true },
+        { 
+          text: state.persona === 'merchant' 
+            ? (state.storefront === 'none' ? 'No store' : state.storefront)
+            : (state.platform === 'custom_web' ? (CONFIG.backends[state.backend]?.label || 'API') : state.sdk),
+          hasFlag: false
+        }
+      ];
+      
+      if (state.features.length > 0) chips.push({ text: `${state.features.length} Features`, hasFlag: false });
+      
+      chips.forEach(chipData => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        if (chipData.hasFlag && chipData.flagUrl) chip.innerHTML = `<img src="${chipData.flagUrl}" alt="flag" /> ${chipData.text}`;
+        else chip.textContent = chipData.text;
+        chipsDiv.appendChild(chip);
+      });
+      
+      planDiv.innerHTML = steps.map(s => s.html).join('');
+      
+      // Reveal output section
+      $('#output').style.display = 'block';
+    }
+
+    function getStateFromUI() {
+      const features = $$('#features input:checked').map(cb => cb.value);
+      return {
+        persona: $('#persona').value,
+        country: $('#country').value,
+        platform: $('#platform').value,
+        storefront: $('#storefront').value,
+        backend: $('#backend').value,
+        sdk: $('#sdk').value,
+        features
+      };
+    }
+
+    // --- 5. INITIALIZATION & EVENTS ---
+    function hydrateForm() {
+      const countrySel = $('#country');
+      const backendSel = $('#backend');
+      const featuresDiv = $('#features');
+
+      Object.entries(CONFIG.regions).forEach(([code, region]) => {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = region.label;
+        countrySel.appendChild(opt);
+      });
+      
+      Object.entries(CONFIG.backends).forEach(([code, backend]) => {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = backend.label;
+        backendSel.appendChild(opt);
+      });
+      
+      CONFIG.features.forEach(feature => {
+        const div = document.createElement('div');
+        div.className = 'checkbox-item';
+        div.innerHTML = `
+          <input type="checkbox" id="feature-${feature.id}" value="${feature.id}" data-persona="${feature.persona}">
+          <label for="feature-${feature.id}">${feature.label}</label>
+        `;
+        featuresDiv.appendChild(div);
+      });
+    }
+
+    function refreshPersonaUI() {
+      const persona = $('#persona').value;
+      const ismerchant = persona === 'merchant';
+      
+      $('#merchantFields').classList.toggle('hidden', !ismerchant);
+      $('#devBackend').classList.toggle('hidden', ismerchant);
+      $('#devSdk').classList.toggle('hidden', ismerchant);
+      
+      const paths = CONFIG.integrationPaths[persona] || [];
+      const platformSel = $('#platform');
+      platformSel.innerHTML = '';
+      
+      const options = {
+        merchant_plugin: 'E-commerce Plugin',
+        merchant_paymentlink: 'Payment Links',
+        merchant_dashboard: 'Dashboard Only',
+        custom_web: 'Custom Web Integration (API)',
+        mobile_sdk: 'Mobile App SDK',
+        dev_paymentlink: 'Payment Links API'
+      };
+      
+      paths.forEach(path => {
+        const opt = document.createElement('option');
+        opt.value = path;
+        opt.textContent = options[path] || path;
+        platformSel.appendChild(opt);
+      });
+      
+      $$('#features input[type="checkbox"]').forEach(cb => {
+        const featurePersona = cb.dataset.persona;
+        const parentDiv = cb.closest('.checkbox-item');
+        if (featurePersona === 'developer' && ismerchant) {
+          parentDiv.style.display = 'none';
+          cb.checked = false;
+        } else {
+          parentDiv.style.display = 'flex';
+        }
+      });
+    }
+
+    function showToast(msg) {
+      const t = $('#toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+    
+    function toMarkdown(steps) {
+      function extractLiText(html) {
+        const el = document.createElement('div');
+        el.innerHTML = html;
+        return Array.from(el.querySelectorAll('li')).map(li => li.textContent.trim().replace(/^•\s*/, ''));
+      }
+      return steps.map((s, i) => `## ${s.number}. ${s.title}\n\n${extractLiText(s.html).map(li => `- ${li}`).join('\n')}\n`).join('\n');
+    }
+
+    // --- MAIN EXECUTION ---
+    hydrateForm();
+    refreshPersonaUI();
+    updateFlagDisplay();
+    
+    const saved = loadState();
+    if(saved.country) {
+       $('#country').value = saved.country;
+       updateFlagDisplay();
+    }
+    if(saved.persona) {
+       $('#persona').value = saved.persona;
+       refreshPersonaUI();
+    }
+
+    // Event Listeners
+    $('#persona').addEventListener('change', () => { refreshPersonaUI(); saveState(getStateFromUI()); });
+    $('#country').addEventListener('change', () => { updateFlagDisplay(); saveState(getStateFromUI()); });
+    $('#platform').addEventListener('change', () => saveState(getStateFromUI()));
+
+    // Generate Roadmap Logic (Internal + PostMessage)
+    $('#generate').addEventListener('click', (e) => {
+      e.preventDefault();
+      const state = getStateFromUI();
+      const plan = buildPlan(state);
+      
+      // 1. Render Inside Widget
+      renderPlan(plan, state);
+      saveState(state);
+      
+      // 2. Notify Parent (optional but good for tracking)
+      window.parent.postMessage({ type: 'paymob-config-event', payload: state }, '*');
+      
+      showToast('✓ Roadmap Generated');
+    });
+
+    $('#copy').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const state = getStateFromUI();
+      const md = toMarkdown(buildPlan(state));
+      try {
+        await navigator.clipboard.writeText(md);
+        showToast('✓ Copied MD');
+      } catch(err) {
+        showToast('✗ Copy failed');
+      }
+    });
+
+    // Auto-Resize Observer
+    const resizeObserver = new ResizeObserver(() => {
+      // Use documentElement scrollHeight to capture everything
+      const height = document.documentElement.scrollHeight; 
+      window.parent.postMessage({ type: 'paymob-widget-resize', height: height }, '*');
+    });
+    resizeObserver.observe(document.body);
+
+  })();
+  </script>
+</body>
+</html>
