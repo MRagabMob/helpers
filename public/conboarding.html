@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* DEFAULT TO LIGHT MODE */
+    /* DEFAULT TO LIGHT MODE - Force with !important where needed */
     :root {
       --primary: #6C5CE7;
       --primary-dark: #5B4CFF;
@@ -29,6 +29,7 @@
     }
 
     /* Dark Mode Variables */
+    html[data-theme="dark"],
     :root[data-theme="dark"] {
       --primary: #7C6EFF;
       --primary-dark: #8B7FFF;
@@ -65,7 +66,28 @@
       transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    .container { width: 100%; max-width: 100%; }
+    .container { 
+      width: 100%; 
+      max-width: 100%;
+      position: relative;
+    }
+    
+    /* Version Label */
+    .version-label {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: var(--primary);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 9999;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .version-label:hover { opacity: 1; }
     
     .card {
       background: transparent;
@@ -163,6 +185,7 @@
       font-family: 'Inter', sans-serif;
     }
     
+    html[data-theme="dark"] select,
     :root[data-theme="dark"] select {
       color-scheme: dark;
     }
@@ -176,6 +199,7 @@
       box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
     }
     
+    html[data-theme="dark"] select:focus,
     :root[data-theme="dark"] select:focus {
       box-shadow: 0 0 0 3px rgba(124, 110, 255, 0.2);
     }
@@ -214,10 +238,12 @@
       transform: translateY(-1px);
     }
 
+    html[data-theme="dark"] .checkbox-item:hover,
     :root[data-theme="dark"] .checkbox-item:hover {
       box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
 
+    html:not([data-theme="dark"]) .checkbox-item:hover,
     :root:not([data-theme="dark"]) .checkbox-item:hover {
       box-shadow: 0 4px 6px rgba(108, 92, 231, 0.1);
     }
@@ -434,6 +460,9 @@
 <body>
 
   <div class="container" id="app">
+    <!-- Version Label -->
+    <div class="version-label" id="versionLabel">v3.0.3</div>
+    
     <section class="card">
       <div class="card-header">
         <h2 class="card-title">Configure Your Integration</h2>
@@ -548,20 +577,20 @@
 
   <script>
   (function() {
-    // --- ENHANCED THEME MANAGER ---
+    // --- ENHANCED THEME MANAGER WITH AGGRESSIVE APPLICATION ---
     const ThemeManager = {
       currentTheme: 'light',
       messageReceived: false,
       
       init() {
-        console.log('[Paymob Widget] Initializing with light mode');
-        this.applyTheme('light');
+        console.log('[Paymob Widget v3.0.3] Initializing with light mode');
+        this.applyThemeAggressively('light');
         this.setupListeners();
         this.requestThemeFromParent();
+        this.updateVersionLabel('light');
       },
 
       requestThemeFromParent() {
-        // Request theme multiple times with delays
         console.log('[Paymob Widget] Requesting theme from parent');
         const delays = [0, 100, 300, 500, 1000, 2000];
         delays.forEach(delay => {
@@ -575,26 +604,39 @@
         });
       },
 
-      applyTheme(theme) {
+      applyThemeAggressively(theme) {
         if (theme === this.currentTheme && this.messageReceived) return;
         
         this.currentTheme = theme;
         this.messageReceived = true;
-        const root = document.documentElement;
         
+        const root = document.documentElement;
+        const body = document.body;
+        
+        // Apply to both html and :root for maximum compatibility
         if (theme === 'dark') {
           root.setAttribute('data-theme', 'dark');
+          body.setAttribute('data-theme', 'dark');
           console.log('[Paymob Widget] ✓ Dark mode applied');
         } else {
           root.removeAttribute('data-theme');
+          body.removeAttribute('data-theme');
+          root.setAttribute('data-theme', 'light'); // Explicitly set light
           console.log('[Paymob Widget] ✓ Light mode applied');
+        }
+        
+        this.updateVersionLabel(theme);
+      },
+
+      updateVersionLabel(theme) {
+        const label = document.getElementById('versionLabel');
+        if (label) {
+          label.textContent = `v3.0.3 • ${theme}`;
         }
       },
 
       setupListeners() {
-        // Listen for ALL message events
         window.addEventListener('message', (event) => {
-          // Log all messages for debugging
           if (event.data && typeof event.data === 'object') {
             console.log('[Paymob Widget] Message received:', event.data);
           }
@@ -603,7 +645,6 @@
           
           let detectedTheme = null;
           
-          // Handle all possible message formats
           if (event.data.type === 'theme-change' && event.data.theme) {
             detectedTheme = event.data.theme;
             console.log('[Paymob Widget] Theme from type=theme-change:', detectedTheme);
@@ -626,27 +667,30 @@
           }
           
           if (detectedTheme) {
-            this.applyTheme(detectedTheme);
+            this.applyThemeAggressively(detectedTheme);
           }
         }, false);
 
-        // System preference as last resort
         const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
         darkModeQuery.addEventListener('change', (e) => {
           if (!this.messageReceived) {
             console.log('[Paymob Widget] Using system preference:', e.matches ? 'dark' : 'light');
-            this.applyTheme(e.matches ? 'dark' : 'light');
+            this.applyThemeAggressively(e.matches ? 'dark' : 'light');
           }
         });
       }
     };
 
-    // Initialize theme FIRST, before anything else
-    ThemeManager.init();
+    // Wait for DOM to be ready before initializing
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => ThemeManager.init());
+    } else {
+      ThemeManager.init();
+    }
 
-    // --- CONFIGURATION LOGIC ---
+    // --- REST OF THE CODE (unchanged) ---
     const CONFIG = {
-      version: "3.0.2",
+      version: "3.0.3",
       baseUrl: "https://developers.paymob.com",
       storageKey: "paymob_onboarding_v3",
       
@@ -737,7 +781,6 @@
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-    // --- HELPER FUNCTIONS ---
     function route(country, key) {
       const region = CONFIG.regions[country];
       if (!region || !region.routes) return '#';
@@ -786,7 +829,6 @@
       else flagIcon.innerHTML = '';
     }
 
-    // --- PLAN BUILDING ---
     function buildPlan(state) {
       const steps = [];
       const { persona, country, platform, storefront, backend, sdk, features } = state;
@@ -885,7 +927,6 @@
       return { title, html, number };
     }
 
-    // --- RENDER UI ---
     function renderPlan(steps, state) {
       const chipsDiv = $('#summaryChips');
       const planDiv = $('#plan');
@@ -931,7 +972,6 @@
       };
     }
 
-    // --- INITIALIZATION ---
     function hydrateForm() {
       const countrySel = $('#country');
       const backendSel = $('#backend');
@@ -1018,7 +1058,6 @@
       return steps.map((s, i) => `## ${s.number}. ${s.title}\n\n${extractLiText(s.html).map(li => `- ${li}`).join('\n')}\n`).join('\n');
     }
 
-    // --- MAIN EXECUTION ---
     hydrateForm();
     refreshPersonaUI();
     updateFlagDisplay();
@@ -1033,7 +1072,6 @@
        refreshPersonaUI();
     }
 
-    // Event Listeners
     $('#persona').addEventListener('change', () => { refreshPersonaUI(); saveState(getStateFromUI()); });
     $('#country').addEventListener('change', () => { updateFlagDisplay(); saveState(getStateFromUI()); });
     $('#platform').addEventListener('change', () => saveState(getStateFromUI()));
@@ -1060,7 +1098,6 @@
       }
     });
 
-    // Auto-Resize Observer
     const resizeObserver = new ResizeObserver(() => {
       const height = document.documentElement.scrollHeight; 
       window.parent.postMessage({ type: 'paymob-widget-resize', height: height }, '*');
