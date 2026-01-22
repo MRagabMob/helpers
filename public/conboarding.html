@@ -13,18 +13,18 @@
       --primary-dark: #5B4CFF;
       --primary-light: #A29BFE;
       --secondary: #00D4AA;
-      --dark: #0F0F23;
-      --text-primary: #2D3436;
-      --text-secondary: #636E72;
-      --text-muted: #95A5A6;
+      --dark: #1A1A2E;
+      --text-primary: #1A1A2E;
+      --text-secondary: #4A5568;
+      --text-muted: #718096;
       --bg-card: transparent; 
       --bg-white: #FFFFFF;
-      --border: #E1E8ED;
-      --border-light: #F1F3F5;
+      --border: #E2E8F0;
+      --border-light: #EDF2F7;
       --radius: 8px;
       --radius-lg: 12px;
       --transition: all 0.2s ease-in-out;
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
     }
 
     /* Dark Mode Variables */
@@ -33,15 +33,15 @@
       --primary-dark: #8B7FFF;
       --primary-light: #6C5CE7;
       --secondary: #00F5CC;
-      --dark: #E8EAED;
-      --text-primary: #E8EAED;
-      --text-secondary: #BDC3C7;
-      --text-muted: #7F8C8D;
+      --dark: #F7FAFC;
+      --text-primary: #F7FAFC;
+      --text-secondary: #CBD5E0;
+      --text-muted: #A0AEC0;
       --bg-card: transparent;
-      --bg-white: #1E1E2E;
-      --border: #2F3136;
-      --border-light: #26272B;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --bg-white: #1A202C;
+      --border: #2D3748;
+      --border-light: #252D3A;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     
     * { 
@@ -91,6 +91,7 @@
       font-size: 1rem;
       color: var(--text-secondary);
       transition: color 0.3s ease;
+      font-weight: 400;
     }
     
     .form-grid {
@@ -117,7 +118,7 @@
     label {
       font-weight: 600;
       font-size: 0.9rem;
-      color: var(--dark);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -158,6 +159,7 @@
       color: var(--text-primary);
       cursor: pointer;
       transition: var(--transition);
+      font-family: 'Inter', sans-serif;
     }
     
     :root[data-theme="dark"] select {
@@ -173,11 +175,16 @@
       box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
     }
     
+    :root[data-theme="dark"] select:focus {
+      box-shadow: 0 0 0 3px rgba(124, 110, 255, 0.2);
+    }
+    
     .help-text {
       font-size: 0.8rem;
       color: var(--text-muted);
       margin-top: 2px;
       transition: color 0.3s ease;
+      font-weight: 400;
     }
     
     .checkbox-group {
@@ -204,11 +211,14 @@
     .checkbox-item:hover { 
       border-color: var(--primary); 
       transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     :root[data-theme="dark"] .checkbox-item:hover {
       box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    :root:not([data-theme="dark"]) .checkbox-item:hover {
+      box-shadow: 0 4px 6px rgba(108, 92, 231, 0.1);
     }
 
     .checkbox-item input {
@@ -223,6 +233,7 @@
       font-size: 0.9rem;
       font-weight: 500;
       transition: color 0.3s ease;
+      color: var(--text-primary);
     }
     
     .button-group {
@@ -245,6 +256,7 @@
       align-items: center;
       gap: 0.5rem;
       transition: all 0.2s ease-in-out;
+      font-family: 'Inter', sans-serif;
     }
     
     .btn-primary {
@@ -254,6 +266,7 @@
     .btn-primary:hover { 
       background: var(--primary-dark); 
       transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(108, 92, 231, 0.25);
     }
     
     .btn-secondary {
@@ -371,7 +384,7 @@
     .stage-title {
       font-size: 1.1rem;
       font-weight: 700;
-      color: var(--dark);
+      color: var(--text-primary);
       margin-bottom: 0.75rem;
       transition: color 0.3s ease;
     }
@@ -406,7 +419,10 @@
       transition: color 0.3s ease;
     }
     
-    .stage-list li a:hover { text-decoration: underline; }
+    .stage-list li a:hover { 
+      text-decoration: underline;
+      color: var(--primary-dark);
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -550,7 +566,6 @@
       applyTheme(theme) {
         const root = document.documentElement;
         root.setAttribute('data-theme', theme);
-        console.log('[Paymob Widget] Theme applied:', theme);
       },
 
       setupListeners() {
@@ -586,8 +601,6 @@
 
         // Watch for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-          // Only apply system preference if parent hasn't sent explicit theme
-          // This prevents conflicts
           this.applyTheme(e.matches ? 'dark' : 'light');
         });
 
@@ -604,7 +617,7 @@
     // Initialize theme management first
     ThemeManager.init();
 
-    // --- CONFIGURATION LOGIC (unchanged) ---
+    // --- CONFIGURATION LOGIC ---
     const CONFIG = {
       version: "3.0.0",
       baseUrl: "https://developers.paymob.com",
@@ -697,7 +710,7 @@
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-    // --- HELPER FUNCTIONS (unchanged) ---
+    // --- HELPER FUNCTIONS ---
     function route(country, key) {
       const region = CONFIG.regions[country];
       if (!region || !region.routes) return '#';
@@ -746,7 +759,7 @@
       else flagIcon.innerHTML = '';
     }
 
-    // --- PLAN BUILDING (unchanged) ---
+    // --- PLAN BUILDING ---
     function buildPlan(state) {
       const steps = [];
       const { persona, country, platform, storefront, backend, sdk, features } = state;
@@ -845,7 +858,7 @@
       return { title, html, number };
     }
 
-    // --- RENDER UI (unchanged) ---
+    // --- RENDER UI ---
     function renderPlan(steps, state) {
       const chipsDiv = $('#summaryChips');
       const planDiv = $('#plan');
@@ -891,7 +904,7 @@
       };
     }
 
-    // --- INITIALIZATION (unchanged) ---
+    // --- INITIALIZATION ---
     function hydrateForm() {
       const countrySel = $('#country');
       const backendSel = $('#backend');
