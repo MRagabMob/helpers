@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* DEFAULT TO LIGHT MODE */
     :root {
       --primary: #6C5CE7;
       --primary-dark: #5B4CFF;
@@ -27,7 +28,7 @@
       --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
     }
 
-    /* Dark Mode Variables */
+    /* Dark Mode Variables - Only apply when explicitly set */
     :root[data-theme="dark"] {
       --primary: #7C6EFF;
       --primary-dark: #8B7FFF;
@@ -547,79 +548,94 @@
 
   <script>
   (function() {
-    // --- DARK MODE MANAGEMENT ---
+    // --- IMPROVED DARK MODE DETECTION ---
     const ThemeManager = {
+      currentTheme: 'light', // DEFAULT TO LIGHT
+      
       init() {
-        this.detectInitialTheme();
+        // Start with light mode
+        this.applyTheme('light');
         this.setupListeners();
+        this.detectParentTheme();
       },
 
-      detectInitialTheme() {
-        // Check for system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.applyTheme(prefersDark ? 'dark' : 'light');
-        
-        // Request theme from parent immediately
-        window.parent.postMessage({ type: 'paymob-get-theme' }, '*');
+      detectParentTheme() {
+        try {
+          // Try to detect parent page theme by checking its background color
+          if (window.parent && window.parent !== window) {
+            // Request theme from parent
+            window.parent.postMessage({ type: 'paymob-get-theme' }, '*');
+            
+            // Try multiple times with delay to ensure we catch the response
+            const attempts = [100, 300, 500, 1000, 2000];
+            attempts.forEach(delay => {
+              setTimeout(() => {
+                window.parent.postMessage({ type: 'paymob-get-theme' }, '*');
+              }, delay);
+            });
+          }
+        } catch (e) {
+          console.log('[Paymob Widget] Could not access parent:', e);
+        }
       },
 
       applyTheme(theme) {
+        if (theme === this.currentTheme) return; // Prevent unnecessary updates
+        
+        this.currentTheme = theme;
         const root = document.documentElement;
-        root.setAttribute('data-theme', theme);
+        
+        if (theme === 'dark') {
+          root.setAttribute('data-theme', 'dark');
+        } else {
+          root.removeAttribute('data-theme'); // Remove to use default light mode
+        }
+        
+        console.log('[Paymob Widget] Theme applied:', theme);
       },
 
       setupListeners() {
-        // Listen for messages from parent (Theneo)
+        // Listen for theme messages from parent
         window.addEventListener('message', (event) => {
-          // Handle various message formats from Theneo
-          if (event.data) {
-            // Format 1: { type: 'theme-change', theme: 'dark' }
-            if (event.data.type === 'theme-change' && event.data.theme) {
-              this.applyTheme(event.data.theme);
-              return;
-            }
-            
-            // Format 2: { theme: 'dark' }
-            if (event.data.theme && !event.data.type) {
-              this.applyTheme(event.data.theme);
-              return;
-            }
-            
-            // Format 3: { type: 'theme', value: 'dark' }
-            if (event.data.type === 'theme' && event.data.value) {
-              this.applyTheme(event.data.value);
-              return;
-            }
-
-            // Format 4: Theneo-specific format
-            if (event.data.action === 'theme-update' && event.data.mode) {
-              this.applyTheme(event.data.mode);
-              return;
-            }
+          if (!event.data) return;
+          
+          let detectedTheme = null;
+          
+          // Try all possible message formats
+          if (event.data.type === 'theme-change' && event.data.theme) {
+            detectedTheme = event.data.theme;
+          } else if (event.data.theme && typeof event.data.theme === 'string') {
+            detectedTheme = event.data.theme;
+          } else if (event.data.type === 'theme' && event.data.value) {
+            detectedTheme = event.data.value;
+          } else if (event.data.action === 'theme-update' && event.data.mode) {
+            detectedTheme = event.data.mode;
+          } else if (event.data.isDark !== undefined) {
+            detectedTheme = event.data.isDark ? 'dark' : 'light';
+          }
+          
+          if (detectedTheme) {
+            this.applyTheme(detectedTheme);
           }
         });
 
-        // Watch for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-          this.applyTheme(e.matches ? 'dark' : 'light');
+        // Watch system preference as fallback
+        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        darkModeQuery.addEventListener('change', (e) => {
+          // Only apply if we haven't received explicit theme from parent
+          if (this.currentTheme === 'light') {
+            this.applyTheme(e.matches ? 'dark' : 'light');
+          }
         });
-
-        // Periodically request theme from parent in case initial message was missed
-        let requestCount = 0;
-        const requestInterval = setInterval(() => {
-          window.parent.postMessage({ type: 'paymob-get-theme' }, '*');
-          requestCount++;
-          if (requestCount >= 5) clearInterval(requestInterval);
-        }, 500);
       }
     };
 
-    // Initialize theme management first
+    // Initialize theme FIRST
     ThemeManager.init();
 
     // --- CONFIGURATION LOGIC ---
     const CONFIG = {
-      version: "3.0.0",
+      version: "3.0.1",
       baseUrl: "https://developers.paymob.com",
       storageKey: "paymob_onboarding_v3",
       
