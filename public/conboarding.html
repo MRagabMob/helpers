@@ -461,7 +461,7 @@
 
   <div class="container" id="app">
     <!-- Version Label -->
-    <div class="version-label" id="versionLabel">v3.0.3</div>
+    <div class="version-label" id="versionLabel">v3.0.4</div>
     
     <section class="card">
       <div class="card-header">
@@ -583,7 +583,7 @@
       messageReceived: false,
       
       init() {
-        console.log('[Paymob Widget v3.0.3] Initializing with light mode');
+        console.log('[Paymob Widget v3.0.4] Initializing with light mode');
         this.applyThemeAggressively('light');
         this.setupListeners();
         this.requestThemeFromParent();
@@ -617,13 +617,16 @@
         if (theme === 'dark') {
           root.setAttribute('data-theme', 'dark');
           body.setAttribute('data-theme', 'dark');
-          console.log('[Paymob Widget] ✓ Dark mode applied');
+          console.log('[Paymob Widget] ✓ Dark mode applied - data-theme=dark');
         } else {
+          // IMPORTANT: Remove attribute for light mode, don't set to 'light'
           root.removeAttribute('data-theme');
           body.removeAttribute('data-theme');
-          root.setAttribute('data-theme', 'light'); // Explicitly set light
-          console.log('[Paymob Widget] ✓ Light mode applied');
+          console.log('[Paymob Widget] ✓ Light mode applied - data-theme removed');
         }
+        
+        // Log current state for debugging
+        console.log('[Paymob Widget] Current data-theme:', root.getAttribute('data-theme') || 'none (light mode)');
         
         this.updateVersionLabel(theme);
       },
@@ -631,7 +634,7 @@
       updateVersionLabel(theme) {
         const label = document.getElementById('versionLabel');
         if (label) {
-          label.textContent = `v3.0.3 • ${theme}`;
+          label.textContent = `v3.0.4 • ${theme}`;
         }
       },
 
@@ -690,7 +693,7 @@
 
     // --- REST OF THE CODE (unchanged) ---
     const CONFIG = {
-      version: "3.0.3",
+      version: "3.0.4",
       baseUrl: "https://developers.paymob.com",
       storageKey: "paymob_onboarding_v3",
       
